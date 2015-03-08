@@ -803,6 +803,27 @@ problem29 = length $ group $ sort [a^b | a <- [2 .. 100], b <- [2 .. 100]]
 -- Answer: 9183
 
 
+{-
+Digit fifth powers
+Problem 30
+
+Surprisingly there are only three numbers that can be written as the sum of fourth powers of their digits:
+
+    1634 = 14 + 64 + 34 + 44
+    8208 = 84 + 24 + 04 + 84
+    9474 = 94 + 44 + 74 + 44
+
+As 1 = 14 is not a sum it is not included.
+
+The sum of these numbers is 1634 + 8208 + 9474 = 19316.
+
+Find the sum of all the numbers that can be written as the sum of fifth powers of their digits.
+-}
+
+problem30 = sum [x | x <- [2 .. 9^5 * 5], sum (map (^5) $ digitsOfNum x) == x]
+-- Answer: 443839
+
+
 answers = zip [1 ..]
   [ problem1
   , problem2
@@ -833,4 +854,5 @@ answers = zip [1 ..]
   , problem27
   , problem28
   , problem29
+  , problem30
   ]
