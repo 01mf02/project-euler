@@ -1,5 +1,6 @@
 import Control.Applicative ((<$>), pure)
 import Control.Arrow ((&&&), first)
+import Control.Monad (guard)
 import Data.List
 import Data.List.Extra (split)
 import Data.Maybe (fromJust)
@@ -824,6 +825,39 @@ problem30 = sum [x | x <- [2 .. 9^5 * 5], sum (map (^5) $ digitsOfNum x) == x]
 -- Answer: 443839
 
 
+{-
+Coin sums
+Problem 31
+
+In England the currency is made up of pound, £, and pence, p, and there are eight coins in general circulation:
+
+    1p, 2p, 5p, 10p, 20p, 50p, £1 (100p) and £2 (200p).
+
+It is possible to make £2 in the following way:
+
+    1×£1 + 1×50p + 2×20p + 1×5p + 1×2p + 3×1p
+
+How many different ways can £2 be made using any number of coins?
+-}
+
+weightedSum l = sum . zipWith (*) l
+implies = (<=)
+
+-- Return all weights w such that w `weightedSum` l <= m.
+weightsSmaller m = f 0 where
+  f s (x:xs) = do
+    guard $ (x == foldl gcd x xs) `implies` ((m - s) `mod` x == 0)
+    w <- [0 .. floor (fromIntegral (200 - s) / fromIntegral x)]
+    rest <- f (s + w*x) xs
+    return $ w:rest
+  f _ [] = [[]]
+
+problem31 =
+  length $ filter (\ xs -> weightedSum xs coins == 200) $ weightsSmaller 200 coins
+  where coins = [1, 2, 5, 10, 20, 50, 100, 200]
+-- Answer: 73682
+
+
 answers = zip [1 ..]
   [ problem1
   , problem2
@@ -855,4 +889,5 @@ answers = zip [1 ..]
   , problem28
   , problem29
   , problem30
+  , problem31
   ]
