@@ -720,9 +720,12 @@ Where 0.1(6) means 0.166666..., and has a 1-digit recurring cycle. It can be see
 Find the value of d < 1000 for which 1/d contains the longest recurring cycle in its decimal fraction part.
 -}
 
--- | Return the longest init of a list with unique elements.
-uncycle l = map snd $ takeWhile (not . fst) $ zip (unique l) l
-  where unique l = zipWith S.member l $ scanl (flip S.insert) S.empty l
+
+-- Returns True for each element of the list that has already occured before.
+occured l = zipWith S.member l $ scanl (flip S.insert) S.empty l
+
+-- | Return the longest init with unique elements of a list.
+uncycle l = map snd $ takeWhile (not . fst) $ zip (occured l) l
 
 
 problem26 = snd $ maximum $ map (length . uncycle . tail . chain &&& id) [2 .. 999]
@@ -858,6 +861,29 @@ problem31 =
 -- Answer: 73682
 
 
+{-
+Pandigital products
+Problem 32
+
+We shall say that an n-digit number is pandigital if it makes use of all the digits 1 to n exactly once; for example, the 5-digit number, 15234, is 1 through 5 pandigital.
+
+The product 7254 is unusual, as the identity, 39 × 186 = 7254, containing multiplicand, multiplier, and product is 1 through 9 pandigital.
+
+Find the sum of all products whose multiplicand/multiplier/product identity can be written as a 1 through 9 pandigital.
+HINT: Some products can be obtained in more than one way so be sure to only include it once in your sum.
+-}
+
+problem32 = sum $ nubSort $ map (\ (_, _, p) -> p) $ pandigitalProducts 9 where
+  pandigitalProducts = filter (\ (m1, m2, p) -> m1 * m2 == p) . numify . split
+  numify = map (\ (m1, (m2, p)) -> (numOfDigits m1, numOfDigits m2, numOfDigits p))
+  split n = map (splitMult n) $ zipInitTails $ permutations [1 .. n]
+  splitMult l (m1, r) = (m1, splitAt (ceiling ((fromIntegral l)/2) - length m1) r)
+  zipInitTails = concatMap (\ p -> zip (sInits p) (sTails p))
+  sInits = init . tail . inits
+  sTails = init . tail . tails
+-- Answer: 45228
+
+
 answers = zip [1 ..]
   [ problem1
   , problem2
@@ -890,4 +916,5 @@ answers = zip [1 ..]
   , problem29
   , problem30
   , problem31
+  , problem32
   ]
