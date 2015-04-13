@@ -1,10 +1,11 @@
-import Control.Applicative ((<$>), pure)
-import Control.Arrow ((&&&), first)
-import Control.Monad (guard)
-import Data.List
-import Data.List.Extra (split)
-import Data.Maybe (fromJust)
-import Data.Ord (comparing)
+import           Control.Applicative ((<$>), pure)
+import           Control.Arrow ((&&&), first)
+import           Control.Monad (guard)
+import           Data.List
+import           Data.List.Extra (split)
+import           Data.Maybe (fromJust)
+import qualified Data.MultiSet as MS
+import           Data.Ord (comparing)
 import qualified Data.Set as S
 
 {-
@@ -884,6 +885,56 @@ problem32 = sum $ nubSort $ map (\ (_, _, p) -> p) $ pandigitalProducts 9 where
 -- Answer: 45228
 
 
+{-
+Digit cancelling fractions
+Problem 33
+
+The fraction 49/98 is a curious fraction, as an inexperienced mathematician in attempting to simplify it may incorrectly believe that 49/98 = 4/8, which is correct, is obtained by cancelling the 9s.
+
+We shall consider fractions like, 30/50 = 3/5, to be trivial examples.
+
+There are exactly four non-trivial examples of this type of fraction, less than one in value, and containing two digits in the numerator and denominator.
+
+If the product of these four fractions is given in its lowest common terms, find the value of the denominator.
+-}
+
+mapNum f = numOfDigits . f . digitsOfNum
+curiousFraction a b =
+  num a / num b == num (mapNum hd a) / num (mapNum tl b) &&
+  tl (digitsOfNum a) == hd (digitsOfNum b)
+
+  where num = fromIntegral
+        hd = take 1
+        tl = hd . reverse
+
+mapPair f (a, b) = (f a, f b)
+zipPairWith f (a, b) (x, y) = (f a x, f b y)
+multFrac = zipPairWith (*)
+
+simplifyFrac (a, b) = mapPair (\ x -> product $ MS.toList $ x `MS.difference` common) (pa, pb) where
+  (pa, pb) = mapPair (MS.fromList . primeFactors) (a, b)
+  common = pa `MS.intersection` pb
+
+problem33 = snd $ simplifyFrac $ foldl1 multFrac fracs where
+  fracs = [(a, b) | b <- [10 .. 99], a <- [10 .. b-1], curiousFraction a b]
+-- Answer: 100
+
+
+{-
+Digit factorials
+Problem 34
+
+145 is a curious number, as 1! + 4! + 5! = 1 + 24 + 120 = 145.
+
+Find the sum of all numbers which are equal to the sum of the factorial of their digits.
+
+Note: as 1! = 1 and 2! = 2 are not sums they are not included.
+-}
+
+problem34 = sum [x | x <- [3 .. 100000], curious x]
+  where curious x = x == sum (map fac $ digitsOfNum x)
+
+
 answers = zip [1 ..]
   [ problem1
   , problem2
@@ -917,4 +968,6 @@ answers = zip [1 ..]
   , problem30
   , problem31
   , problem32
+  , problem33
+  , problem34
   ]
